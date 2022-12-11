@@ -11,7 +11,7 @@ import io.vertx.httpproxy.HttpProxy;
 public class MainVerticle extends AbstractVerticle {
 
 	private static final int PROXY_PORT = 8080;
-	private static final String ORIGIN_HOST_DOMAIN = "stock-view-controller.kl.local";
+	private static final String ORIGIN_HOST_DOMAIN = "localhost";
 	private static final int ORIGIN_HOST_PORT = 8082;
 
 	@Override
