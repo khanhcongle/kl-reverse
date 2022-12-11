@@ -1,0 +1,18 @@
+= Kl-reverse
+
+== Building
+
+To launch your tests:
+```
+mvn clean test
+```
+
+To package your application:
+```
+mvn clean package
+```
+
+To run your application:
+```
+mvn clean compile exec:java -Dmaven.test.skip
+```
