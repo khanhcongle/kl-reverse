@@ -28,13 +28,12 @@ public class BodyInterceptor {
 			@Override
 			public Future<Void> handleProxyResponse(ProxyContext context) {
 				ProxyRequest request = context.request();
-				ProxyResponse proxyResponse = context.response();
-
-				logRequest(request, "[" + proxyResponse.getStatusCode() + "]");
-				Body body = proxyResponse.getBody();
+				ProxyResponse response = context.response();
+				logRequest(request, "[" + response.getStatusCode() + "]");
+				Body body = response.getBody();
 				Body filteredBody = Body.body(filter.init(body.stream()), body.length());
 
-				proxyResponse.setBody(filteredBody);
+				response.setBody(filteredBody);
 				return context.sendResponse();
 			}
 
