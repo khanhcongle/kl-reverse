@@ -1,6 +1,6 @@
 = Kl-reverse
 
-The most promising solution: https://www.npmjs.com/package/json-caching-proxy
+Please use this tool instead: https://www.npmjs.com/package/json-caching-proxy
 
 == Building
 
