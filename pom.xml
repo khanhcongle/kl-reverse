@@ -33,12 +33,12 @@
 		</dependencies>
 	</dependencyManagement>
 
-	<dependencies>		
+	<dependencies>
 		<dependency>
 			<groupId>io.vertx</groupId>
 			<artifactId>vertx-http-proxy</artifactId>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>io.vertx</groupId>
 			<artifactId>vertx-junit5</artifactId>

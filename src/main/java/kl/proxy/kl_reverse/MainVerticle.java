@@ -7,6 +7,7 @@ import io.vertx.core.Promise;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.httpproxy.HttpProxy;
+import io.vertx.httpproxy.ProxyInterceptor;
 
 public class MainVerticle extends AbstractVerticle {
 
@@ -17,9 +18,11 @@ public class MainVerticle extends AbstractVerticle {
 	@Override
 	public void start(Promise<Void> startPromise) throws Exception {
 
+		ProxyInterceptor bodyInterceptor = BodyInterceptor.newInterceptor();
+		
 		HttpProxy httpProxy = HttpProxy.reverseProxy(vertx.createHttpClient())
 				.origin(ORIGIN_HOST_PORT, ORIGIN_HOST_DOMAIN)
-				.addInterceptor(BodyInterceptor.newInterceptor());
+				.addInterceptor(bodyInterceptor);
 
 		HttpServer httpServer = vertx.createHttpServer();
 		httpServer.requestHandler((Handler<HttpServerRequest>) httpProxy)

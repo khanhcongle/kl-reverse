@@ -7,41 +7,52 @@ import io.vertx.httpproxy.ProxyInterceptor;
 import io.vertx.httpproxy.ProxyRequest;
 import io.vertx.httpproxy.ProxyResponse;
 
-public class BodyInterceptor {
-
+public class BodyInterceptor implements ProxyInterceptor {
+	FilterBase filter;
+	
+	private BodyInterceptor(FilterBase filter) {
+		this.filter = filter;
+	}
+	
 	public static ProxyInterceptor newInterceptor() {
-		Filter filter = new Filter();
-		filter.handler(buffer -> System.out.println(buffer.toString()));
+		FilterBase filter = new FilterBase();		
+		return new BodyInterceptor(filter);
+	}
+	
+	@Override
+	public Future<ProxyResponse> handleProxyRequest(ProxyContext context) {
+		ProxyRequest request = context.request();
+//		logRequest(request, "[req]");
+		filterBody(request);
+		
+		return context.sendRequest();
+	}
 
-		return new ProxyInterceptor() {
-			@Override
-			public Future<ProxyResponse> handleProxyRequest(ProxyContext context) {
-				ProxyRequest request = context.request();
-				Body body = request.getBody();
-				Body filteredBody = Body.body(filter.init(body.stream()), body.length());
-				request.setBody(filteredBody);
+	@Override
+	public Future<Void> handleProxyResponse(ProxyContext context) {
+		ProxyRequest request = context.request();
+		ProxyResponse response = context.response();
+		logRequest(request, "[" + response.getStatusCode() + "]");
+		filterBody(response);
+		
+		return context.sendResponse();
+	}
 
-				logRequest(request, "[req]");
-				return context.sendRequest();
-			}
+	private ProxyRequest filterBody(ProxyRequest request) {
+		return request.setBody(filterBody(request.getBody()));
+	}
 
-			@Override
-			public Future<Void> handleProxyResponse(ProxyContext context) {
-				ProxyRequest request = context.request();
-				ProxyResponse response = context.response();
-				logRequest(request, "[" + response.getStatusCode() + "]");
-				Body body = response.getBody();
-				Body filteredBody = Body.body(filter.init(body.stream()), body.length());
+	private ProxyResponse filterBody(ProxyResponse response) {
+		return response.setBody(filterBody(response.getBody()));
+	}
 
-				response.setBody(filteredBody);
-				return context.sendResponse();
-			}
+	private Body filterBody(Body body) {
+		return Body.body(filter.init(body.stream()), body.length());
+	}
 
-			private void logRequest(ProxyRequest request, String postfixText) {
-				System.out.println(request.hashCode() + ": "
-						+ String.join(" ", postfixText, request.getMethod().toString(), request.absoluteURI()));
-			}
-		};
+	private void logRequest(ProxyRequest request, String postfixText) {
+		System.out.println(request.hashCode() + ": "
+				+ String.join(" ", postfixText, request.getMethod().toString(), request.getURI()));
 	}
 
 }
