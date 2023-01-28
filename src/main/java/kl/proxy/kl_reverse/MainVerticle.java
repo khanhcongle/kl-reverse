@@ -2,12 +2,11 @@ package kl.proxy.kl_reverse;
 
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.AsyncResult;
-import io.vertx.core.Handler;
 import io.vertx.core.Promise;
 import io.vertx.core.http.HttpServer;
-import io.vertx.core.http.HttpServerRequest;
 import io.vertx.httpproxy.HttpProxy;
 import io.vertx.httpproxy.ProxyInterceptor;
+import kl.proxy.kl_reverse.proxy.BodyInterceptor;
 
 public class MainVerticle extends AbstractVerticle {
 
@@ -18,15 +17,15 @@ public class MainVerticle extends AbstractVerticle {
 	@Override
 	public void start(Promise<Void> startPromise) throws Exception {
 
-		ProxyInterceptor bodyInterceptor = BodyInterceptor.newInterceptor();
+		ProxyInterceptor bodyInterceptor = new BodyInterceptor();
 		
-		HttpProxy httpProxy = HttpProxy.reverseProxy(vertx.createHttpClient())
+		HttpProxy httpProxyClient = HttpProxy.reverseProxy(vertx.createHttpClient())
 				.origin(ORIGIN_HOST_PORT, ORIGIN_HOST_DOMAIN)
 				.addInterceptor(bodyInterceptor);
 
 		HttpServer httpServer = vertx.createHttpServer();
-		httpServer.requestHandler((Handler<HttpServerRequest>) httpProxy)
-				.listen(PROXY_PORT, result -> this.serverStartListener(result, startPromise));
+		httpServer.requestHandler(httpProxyClient)
+				.listen(PROXY_PORT, asyncResult -> this.serverStartListener(asyncResult, startPromise));
 	}
 	
 	private void serverStartListener(AsyncResult<HttpServer> result, Promise<Void> startPromise) {

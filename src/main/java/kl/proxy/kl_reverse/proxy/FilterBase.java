@@ -1,4 +1,4 @@
-package kl.proxy.kl_reverse;
+package kl.proxy.kl_reverse.proxy;
 
 import io.vertx.core.Handler;
 import io.vertx.core.buffer.Buffer;
@@ -11,10 +11,33 @@ class FilterBase implements ReadStream<Buffer> {
 	private Handler<Buffer> downStreamDataHandler;
 	private Handler<Throwable> downStreamExceptionHandler;
 	private Handler<Void> downStreamEndHandler;
-
-	ReadStream<Buffer> init(ReadStream<Buffer> s) {
+	
+	public FilterBase(ReadStream<Buffer> s, Handler<Buffer> handler) {
 		stream = s;
+		init(handler, null, null);
+	}
+	
+	public FilterBase(
+			ReadStream<Buffer> s,
+			Handler<Buffer> handler,
+			Handler<Throwable> exceptionHandler,
+			Handler<Void> endHandler) {
+		
+		stream = s;
+		init(handler, exceptionHandler, endHandler);
+	}
+
+	private ReadStream<Buffer> init(
+			Handler<Buffer> handler,
+			Handler<Throwable> exceptionHandler,
+			Handler<Void> endHandler) {
+		/*
+		 * Data handler
+		 */
 		stream.handler(buff -> {
+			if (handler != null) {
+				handler.handle(buff);
+			}
 			if (downStreamDataHandler == null) {
 				return;
 			}
@@ -22,18 +45,30 @@ class FilterBase implements ReadStream<Buffer> {
 			for (int i = 0; i < bytes.length; i++) {
 				bytes[i] = buff.getByte(i);
 			}
-			System.out.println("Body filtered: " + buff.toString());
 			downStreamDataHandler.handle(Buffer.buffer(bytes));
 		});
-		
+
+		/*
+		 * Exception handler
+		 */
 		stream.exceptionHandler(err -> {
+			System.out.println("stream.exceptionHandler...");
+			if (exceptionHandler != null) {
+				exceptionHandler.handle(err);
+			}
 			if (downStreamExceptionHandler == null) {
 				return;
 			}
 			downStreamExceptionHandler.handle(err);
 		});
-		
+
+		/*
+		 * End handler
+		 */
 		stream.endHandler(v -> {
+			if (endHandler != null) {
+				endHandler.handle(v);
+			}
 			if (downStreamEndHandler == null) {
 				return;
 			}
