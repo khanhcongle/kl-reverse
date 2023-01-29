@@ -18,3 +18,8 @@ To run your application:
 ```
 mvn clean compile exec:java -Dmaven.test.skip
 ```
+
+To custom ports:
+```
+mvn clean compile exec:java -Dmaven.test.skip -Dports.proxy=8080 -Dports.origin=8082
+```

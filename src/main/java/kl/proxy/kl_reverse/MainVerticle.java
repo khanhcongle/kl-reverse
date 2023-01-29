@@ -1,13 +1,20 @@
 package kl.proxy.kl_reverse;
 
+import java.util.Optional;
+
 import io.netty.handler.codec.http.HttpHeaderValues;
+import io.vertx.config.ConfigRetriever;
+import io.vertx.config.ConfigRetrieverOptions;
+import io.vertx.config.ConfigStoreOptions;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerResponse;
+import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
 import io.vertx.httpproxy.HttpProxy;
 import io.vertx.httpproxy.ProxyInterceptor;
@@ -23,15 +30,25 @@ public class MainVerticle extends AbstractVerticle {
 
 	@Override
 	public void start(Promise<Void> startPromise) throws Exception {
-		startResourceListener(startPromise);
-		startReverseProxyServer(startPromise);
-		startPromise.complete();
+		getConfig().onSuccess(jsonConfig -> {
+			startResourceListener(startPromise, jsonConfig);
+			startReverseProxyServer(startPromise, jsonConfig);
+			startPromise.complete();
+		});
 	}
 	
-	private void startResourceListener(Promise<Void> startPromise) {
+	private Future<JsonObject> getConfig() {
+		ConfigStoreOptions systemConfig = new ConfigStoreOptions().setType("sys").setConfig(new JsonObject().put("hierarchical", true));
+		ConfigRetrieverOptions configRetrieverOptions = new ConfigRetrieverOptions().addStore(systemConfig);
+		ConfigRetriever retriever = ConfigRetriever.create(vertx, configRetrieverOptions);
+		return retriever.getConfig();
+	}
+
+	private void startResourceListener(Promise<Void> startPromise, JsonObject jsonConfig) {
 		/*
 		 * REF: https://vertx.io/docs/vertx-web/java/
 		 */
+		
 		
 		Router router = Router.router(vertx);
 		
@@ -60,16 +77,21 @@ public class MainVerticle extends AbstractVerticle {
 
 	}
 
-	private void startReverseProxyServer(Promise<Void> startPromise) {
+	private void startReverseProxyServer(Promise<Void> startPromise, JsonObject jsonConfig) {
+		
+		JsonObject ports = jsonConfig.getJsonObject("ports");
+		Integer proxyPort = Optional.ofNullable(ports).map(port -> port.getInteger("proxy")).orElse(PROXY_PORT);
+		Integer originPort = Optional.ofNullable(ports).map(port -> port.getInteger("origin")).orElse(ORIGIN_HOST_PORT);
+		
 		ProxyInterceptor bodyInterceptor = new BodyInterceptor();
 		
 		HttpProxy httpProxyClient = HttpProxy.reverseProxy(vertx.createHttpClient())
-				.origin(ORIGIN_HOST_PORT, ORIGIN_HOST_DOMAIN)
+				.origin(originPort, ORIGIN_HOST_DOMAIN)
 				.addInterceptor(bodyInterceptor);
 
 		HttpServer httpServer = vertx.createHttpServer();
 		httpServer.requestHandler(httpProxyClient)
-				.listen(PROXY_PORT, asyncResult -> this.serverStartListener("Reverse Proxy", PROXY_PORT, asyncResult, startPromise));
+				.listen(proxyPort, asyncResult -> this.serverStartListener("Reverse Proxy", proxyPort, asyncResult, startPromise));
 	}
 	
 	private void serverStartListener(
