@@ -41,11 +41,7 @@ class FilterBase implements ReadStream<Buffer> {
 			if (downStreamDataHandler == null) {
 				return;
 			}
-			byte[] bytes = new byte[buff.length()];
-			for (int i = 0; i < bytes.length; i++) {
-				bytes[i] = buff.getByte(i);
-			}
-			downStreamDataHandler.handle(Buffer.buffer(bytes));
+			downStreamDataHandler.handle(buff);
 		});
 
 		/*

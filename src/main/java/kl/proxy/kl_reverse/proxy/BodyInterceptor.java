@@ -1,11 +1,15 @@
 package kl.proxy.kl_reverse.proxy;
 
+import java.net.MalformedURLException;
+import java.net.URL;
+
 import io.vertx.core.Future;
 import io.vertx.core.json.JsonObject;
 import io.vertx.httpproxy.ProxyContext;
 import io.vertx.httpproxy.ProxyInterceptor;
 import io.vertx.httpproxy.ProxyRequest;
 import io.vertx.httpproxy.ProxyResponse;
+import kl.proxy.kl_reverse.context.RequestsLogger;
 import kl.proxy.kl_reverse.context.StopWatch;
 
 public class BodyInterceptor implements ProxyInterceptor, FilterableProxyHandler {
@@ -28,25 +32,30 @@ public class BodyInterceptor implements ProxyInterceptor, FilterableProxyHandler
 		return context.sendResponse();
 	}
 
-	public void filter(ProxyRequest request, ProxyResponse response) {
+	private void filter(ProxyRequest request, ProxyResponse response) {
 		filterBody(response);
-		log(request, response);		
+		try {
+			log(request, response);
+		} catch (MalformedURLException e) {
+			e.printStackTrace();
+		}
 	}
 
-	public void log(ProxyRequest request, ProxyResponse response) {
+	public void log(ProxyRequest request, ProxyResponse response) throws MalformedURLException {
 		String requestUri = String.join(" ", request.getMethod().toString(), request.getURI());
 		
 		long start = StopWatch.removeStartTime(request.hashCode());
 		long responseTimeMilis = System.currentTimeMillis() - start;
 		
 		JsonObject record = JsonObject.of(
+				"request", requestUri,
+				"status", response.getStatusCode(),
 				"start", start,
 				"time", responseTimeMilis,
-				"status", response.getStatusCode(),
-				"request", requestUri,
-				"hash", request.hashCode()
+				"path", new URL(request.absoluteURI()).getPath()
 				);
-		System.out.println(record.toString());
+		String prettJson = record.encodePrettily();
+		System.out.println(prettJson);
+		RequestsLogger.add(prettJson);
 	}
-
 }

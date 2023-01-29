@@ -10,7 +10,7 @@ public class StopWatch {
 	}
 
 	public static LocalMap<Integer, Long> getStartTimeMap() {
-		return DataSharable.getSharedData().getLocalMap(Constants.SharedData.API_RECORDS_ASYNC_MAP);
+		return DataSharable.getSharedData().getLocalMap(Constants.SharedData.REQUEST_START_TIME_MAP);
 	}
 	
 	public static long removeStartTime(int hashCode) {
