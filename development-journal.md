@@ -8,6 +8,10 @@
 
 ## Log
 
+2023-01-30
+- *valuable*: supports multiple ports by -Dbind=<proxyPort>:<originPort>,...
+
+
 2023-01-29
 - *valuable*: configurable ports. As a developer I want to have an easy way to configure proxy port.
 - *valuable*: visualizable proxied requests.

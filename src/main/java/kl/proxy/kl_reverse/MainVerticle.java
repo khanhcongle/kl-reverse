@@ -1,6 +1,8 @@
 package kl.proxy.kl_reverse;
 
-import java.util.Optional;
+import java.util.function.BiConsumer;
+
+import org.apache.commons.lang3.StringUtils;
 
 import io.netty.handler.codec.http.HttpHeaderValues;
 import io.vertx.config.ConfigRetriever;
@@ -27,13 +29,17 @@ public class MainVerticle extends AbstractVerticle {
 	private static final String ORIGIN_HOST_DOMAIN = "localhost";
 	private static final int ORIGIN_HOST_PORT = 8082;
 	private static final int RESOURCE_PORT = 8880;
+	
+	private Promise<Void> startPromise;
 
 	@Override
 	public void start(Promise<Void> startPromise) throws Exception {
+		this.startPromise = startPromise;
+		
 		getConfig().onSuccess(jsonConfig -> {
-			startResourceListener(startPromise, jsonConfig);
-			startReverseProxyServer(startPromise, jsonConfig);
-			startPromise.complete();
+			startResourceListener(jsonConfig);
+			startReverseProxyServer(jsonConfig);
+			this.startPromise.complete();
 		});
 	}
 	
@@ -44,12 +50,10 @@ public class MainVerticle extends AbstractVerticle {
 		return retriever.getConfig();
 	}
 
-	private void startResourceListener(Promise<Void> startPromise, JsonObject jsonConfig) {
+	private void startResourceListener(JsonObject jsonConfig) {
 		/*
 		 * REF: https://vertx.io/docs/vertx-web/java/
 		 */
-		
-		
 		Router router = Router.router(vertx);
 		
 		router.route()
@@ -77,12 +81,13 @@ public class MainVerticle extends AbstractVerticle {
 
 	}
 
-	private void startReverseProxyServer(Promise<Void> startPromise, JsonObject jsonConfig) {
-		
-		JsonObject ports = jsonConfig.getJsonObject("ports");
-		Integer proxyPort = Optional.ofNullable(ports).map(port -> port.getInteger("proxy")).orElse(PROXY_PORT);
-		Integer originPort = Optional.ofNullable(ports).map(port -> port.getInteger("origin")).orElse(ORIGIN_HOST_PORT);
-		
+	private void startReverseProxyServer(JsonObject jsonConfig) {
+		String bindings = jsonConfig.getString("bind");		
+		//
+		startProxyServers(bindings, this::startProxyServer);
+	}
+
+	private void startProxyServer(Integer proxyPort, Integer originPort) {
 		ProxyInterceptor bodyInterceptor = new BodyInterceptor();
 		
 		HttpProxy httpProxyClient = HttpProxy.reverseProxy(vertx.createHttpClient())
@@ -92,6 +97,24 @@ public class MainVerticle extends AbstractVerticle {
 		HttpServer httpServer = vertx.createHttpServer();
 		httpServer.requestHandler(httpProxyClient)
 				.listen(proxyPort, asyncResult -> this.serverStartListener("Reverse Proxy", proxyPort, asyncResult, startPromise));
+	}
+
+	private static void startProxyServers(String bindingAsString, BiConsumer<Integer, Integer> starter) {
+		String[] bindings = StringUtils.split(bindingAsString, ",");
+		if(bindings == null || bindings.length == 0) {
+			starter.accept(PROXY_PORT, ORIGIN_HOST_PORT);
+			return;
+		}
+		for (String binding : bindings) {
+			String[] ports = StringUtils.split(binding, ":");
+			if(ports == null || ports.length != 2) {
+				throw new IllegalArgumentException("Format: -Dbind=<proxyPort>:<originPort>,...");
+			}
+			Integer proxyPort = Integer.parseInt(ports[0]);
+			Integer originPort = Integer.parseInt(ports[1]);
+			System.out.println("proxyPort: " + proxyPort + "; originPort: " + originPort);
+			starter.accept(proxyPort, originPort);
+		}
 	}
 	
 	private void serverStartListener(
