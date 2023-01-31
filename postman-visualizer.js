@@ -11,69 +11,52 @@ var template = `
 
 <script>
 pm.getData((error, dataHolder) => {
-    let data = dataHolder.response;
-    let minDate = Math.min(...data.map(each => each.start));
-    let maxDate = Math.max(...data.map(each => each.end));
+	let data = dataHolder.response;
+	let minDate = Math.min(...data.map(each => each.start));
+	let maxDate = Math.max(...data.map(each => each.end));
 
-    let categories = [...new Set(data.map(each => each.name))];
-    data.forEach(each => {each.y = categories.indexOf(each.name)});
+	let categories = [...new Set(data.map(each => each.name))];
+	data.forEach(each => {
+		each.y = categories.indexOf(each.name)
+	});
 
-    let series = [{
-            name: 'Project 1',
-            data
-        }];
+	let series = [{
+		name: 'Project 1',
+		data,
+		dataLabels: {
+			allowOverlap: false,
+			format: '<span style="font-weight: bold;">{point.label}</span><br/>'
+		},
+	}];
 
-    // THE CHART
-    Highcharts.ganttChart('container', {
-        title: {
-            text: undefined,
-            align: 'left'
-        },
+	// THE CHART
+	Highcharts.ganttChart('container', {
+		title: {
+			text: undefined,
+			align: 'left'
+		},
 
-    subtitle: {
-        text: undefined
-    },
-        xAxis: {
-            min: minDate,
-            max: maxDate,
-            minPadding: 0.05,
-            maxPadding: 0.05
-        },
+		subtitle: {
+			text: undefined
+		},
+		xAxis: {
+			min: minDate,
+			max: maxDate
+		},
 
-        yAxis: {
-            categories
-        },
-    tooltip: {
-        outside: true
-    },
-        accessibility: {
-            point: {
-                descriptionFormatter: function (point) {
-                    var completedValue = point.completed ?
-                            point.completed.amount || point.completed : null,
-                        completed = completedValue ?
-                            ' Task completed ' + Math.round(completedValue * 1000) / 10 + '%.' :
-                            '';
-                    return Highcharts.format(
-                        '{point.yCategory}.{completed} Start {point.x:%Y-%m-%d}, end {point.x2:%Y-%m-%d}.',
-                        { point, completed }
-                    );
-                }
-            }
-        },
-
-        lang: {
-            accessibility: {
-                axis: {
-                    xAxisDescriptionPlural: 'The chart has a two-part X axis showing time in both week numbers and days.'
-                }
-            }
-        },
-
-        series
-    });
+		yAxis: {
+			categories,
+			labels: {
+				align: 'left'
+			}
+		},
+		tooltip: {
+			pointFormat: '<span>{point.label}</span><br><span>S: {point.start:%H:%M:%S.%L}</span><br/><span>E: {point.end:%H:%M:%S.%L}</span>',
+			outside: true
+		},
+		series
+	});
 });
-
 </script>
 
 `;
@@ -84,9 +67,9 @@ pm.visualizer.set(template, {
     response: pm.response.json().map(each => {
         return {
             name: each.path,
+            label: `${each.time} ms`,
             start: new Date(each.start).getTime(),
-            end: new Date(each.start + each.time).getTime(),
-            completed: 1
+            end: new Date(each.start + each.time).getTime()
         }
     })
 });
