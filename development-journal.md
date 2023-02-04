@@ -2,11 +2,14 @@
 
 ## Wish list
 
-- bug missing information when response body is big
 - Unit test and Integration Test (ref: https://vertx.io/blog/unit-and-integration-tests/)
 - cacheable exclude mode
 - delay caching
 - SSL
+
+## Bug fixes
+2023-02-04
+- fix bug missing information when response body is big
 
 ## Log
 

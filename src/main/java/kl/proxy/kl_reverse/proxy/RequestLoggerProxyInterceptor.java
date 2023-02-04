@@ -31,9 +31,9 @@ public class RequestLoggerProxyInterceptor implements ProxyInterceptor, Filterab
 	}
 
 	private void filterResponse(ProxyRequest request, ProxyResponse response) {
-		filterBody(response, (Buffer buffer) -> {
+		filterBody(response, buffer -> {
 			try {
-				RequestLoggerHandler.logRequest(request, response, buffer.copy());
+				RequestLoggerHandler.logRequest(request, response, buffer);
 			} catch (MalformedURLException e1) {
 				e1.printStackTrace();
 			}

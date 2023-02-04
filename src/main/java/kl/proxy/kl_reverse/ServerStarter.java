@@ -75,7 +75,8 @@ public abstract class ServerStarter {
 			HttpProxy httpProxyClient = HttpProxy.reverseProxy(vertx.createHttpClient())
 					.origin(originPort, getHostDomain())
 					.addInterceptor(new RequestLoggerProxyInterceptor())
-					.addInterceptor(new CachedRequestProxyInterceptor());
+					.addInterceptor(new CachedRequestProxyInterceptor())
+					;
 
 			HttpServer httpServer = vertx.createHttpServer();
 			httpServer.requestHandler(httpProxyClient)

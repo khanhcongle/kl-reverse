@@ -19,6 +19,6 @@ public interface FilterableProxyHandler {
 
 	default Body filterBody(Body body, Handler<Buffer> bufferHandler) {
 		ReadStream<Buffer> stream = body.stream();
-		return Body.body(new FilterBase(stream, bufferHandler), body.length());
+		return Body.body(new BufferingReadStream(stream, Buffer.buffer(), bufferHandler));
 	}
 }
