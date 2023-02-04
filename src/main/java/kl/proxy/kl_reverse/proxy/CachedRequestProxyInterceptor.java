@@ -28,13 +28,18 @@ public class CachedRequestProxyInterceptor implements ProxyInterceptor {
 			JsonObject jsonObject = optionalMatch.get();
 			ProxyResponse response = request.response()
 				      .setStatusCode(200)
-				      .setBody(Body.body(Buffer.buffer(jsonObject.getString("body"))));
+				      .setBody(Body.body(Buffer.buffer(jsonObject.getString("resBody"))));
+			
+			for (String header : jsonObject.getString("resHeaders").split("\\n")) {
+				String[] keyValue = header.split("=");
+				response.putHeader(keyValue[0], keyValue[1]);
+			}
 			
 			return Future.succeededFuture(response);
 		}
 		return context.sendRequest();
 	}
-	
+
 	private boolean cidChecker(ProxyRequest request, JsonObject json) {
 		CacheIdentifier cacheIdentifier = new CacheIdentifier(request.getMethod(), request.getURI());
 		

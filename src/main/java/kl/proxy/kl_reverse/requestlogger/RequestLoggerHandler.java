@@ -59,7 +59,8 @@ public class RequestLoggerHandler extends RequestsLogger {
 				"time", responseTimeMilis,
 				"path", new URL(request.absoluteURI()).getPath(),
 				"cid", new CacheIdentifier(request.getMethod(), request.getURI()).toString(),
-				"body", bodyBuffer.toString()
+				"resBody", bodyBuffer.toString(),
+				"resHeaders", response.headers().toString()
 				);
 		String prettJson = record.encodePrettily();
 		System.out.println(prettJson);
