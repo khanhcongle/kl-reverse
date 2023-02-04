@@ -2,6 +2,7 @@
 
 ## Wish list
 
+- Unit test and Integration Test (ref: https://vertx.io/blog/unit-and-integration-tests/)
 - cacheable exclude mode
 - delay caching
 - SSL
