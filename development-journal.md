@@ -2,12 +2,14 @@
 
 ## Wish list
 
-- visualization resource could be queried by time (from, to)
 - cacheable exclude mode
 - delay caching
 - SSL
 
 ## Log
+
+2023-02-04
+- visualization resource could be queried by time (from, to) (e.g. GET localhost:8880?from=1675496922458)
 
 2023-01-31
 - *valuable*: supports multiple ports by -Dbind=[proxyPort]:[originPort],...
