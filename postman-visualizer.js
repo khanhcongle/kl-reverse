@@ -51,7 +51,10 @@ pm.getData((error, dataHolder) => {
 			}
 		},
 		tooltip: {
-			pointFormat: '<span>{point.label}</span><br><span>S: {point.start:%H:%M:%S.%L}</span><br/><span>E: {point.end:%H:%M:%S.%L}</span>',
+			pointFormat: \`<span>{point.label}</span>
+                            <br><span>S: {point.start:%Y-%m-%dT%H:%M:%S.%LZ}</span>
+                            <br/><span>E: {point.end:%Y-%m-%dT%H:%M:%S.%LZ}</span>
+                        \`,
 			outside: true
 		},
 		series
@@ -68,8 +71,8 @@ pm.visualizer.set(template, {
         return {
             name: each.path,
             label: `${each.time} ms`,
-            start: new Date(each.start).getTime(),
-            end: new Date(each.start + each.time).getTime()
+            start: each.start,
+            end: each.start + each.time
         }
     })
 });
