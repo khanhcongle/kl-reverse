@@ -1,29 +1,21 @@
 package kl.proxy.kl_reverse;
 
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-import java.util.Date;
-import java.util.Optional;
 import java.util.function.BiConsumer;
 
 import org.apache.commons.lang3.StringUtils;
 
-import io.netty.handler.codec.http.HttpHeaderValues;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
-import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServer;
-import io.vertx.core.http.HttpServerRequest;
-import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
 import io.vertx.httpproxy.HttpProxy;
 import io.vertx.httpproxy.ProxyInterceptor;
 import kl.proxy.kl_reverse.context.ContextAccessable;
-import kl.proxy.kl_reverse.context.RequestsLogger;
-import kl.proxy.kl_reverse.proxy.BodyInterceptor;
+import kl.proxy.kl_reverse.proxy.BaseInterceptor;
+import kl.proxy.kl_reverse.requestlogger.RequestLoggerHandler;
 
 public abstract class ServerStarter {
 	private static final String ORIGIN_HOST_DOMAIN = "localhost";
@@ -57,7 +49,6 @@ public abstract class ServerStarter {
 
 		public ProxyServerStarter(Promise<Void> startPromise) {
 			super(startPromise);
-			// TODO Auto-generated constructor stub
 		}
 		
 		public void start(JsonObject jsonConfig) {
@@ -66,11 +57,11 @@ public abstract class ServerStarter {
 		}
 
 		private void startProxyServer(Integer proxyPort, Integer originPort) {
-			ProxyInterceptor bodyInterceptor = new BodyInterceptor();
+			ProxyInterceptor loggingInterceptor = new BaseInterceptor();
 			
 			HttpProxy httpProxyClient = HttpProxy.reverseProxy(vertx.createHttpClient())
 					.origin(originPort, getHostDomain())
-					.addInterceptor(bodyInterceptor);
+					.addInterceptor(loggingInterceptor);
 
 			HttpServer httpServer = vertx.createHttpServer();
 			httpServer.requestHandler(httpProxyClient)
@@ -108,42 +99,15 @@ public abstract class ServerStarter {
 			 * REF: https://vertx.io/docs/vertx-web/java/
 			 */
 			Router router = Router.router(vertx);
-			
+
 			router.route()
 				.method(HttpMethod.GET)
-				.method(HttpMethod.POST)
-				.method(HttpMethod.PUT)
-				.handler(ctx -> {
-					HttpServerRequest request = ctx.request();
-					LocalDateTime from = paramToLocalDateTime(request.getParam("from"));
-					LocalDateTime to = paramToLocalDateTime(request.getParam("to"));
-					
-				    String responseBody = RequestsLogger.get(from, to).encodePrettily();
-
-				    HttpServerResponse response = ctx.response();
-				    // enable chunked responses because we will be adding data as
-				    // we execute over other handlers. This is only required once and
-				    // only if several handlers do output.
-				    response.setChunked(true);
-				    response.putHeader(HttpHeaders.CONTENT_TYPE, HttpHeaderValues.APPLICATION_JSON);
-					response.write(responseBody);
-				    
-				    // Now end the response
-				    ctx.response().end();
-				});
+				.handler(RequestLoggerHandler::handleGet);
 			
 			HttpServer httpServer = vertx.createHttpServer();
 			httpServer.requestHandler(router)
 				.listen(RESOURCE_PORT, asyncResult -> this.serverStartListener("Resources", RESOURCE_PORT, asyncResult, startPromise));
 
-		}
-
-		private LocalDateTime paramToLocalDateTime(String fromParam) {
-			return Optional.ofNullable(fromParam)
-					.map(string -> new Date(Long.valueOf(string)))
-					.map(Date::toInstant)
-					.map(instant -> LocalDateTime.ofInstant(instant, ZoneOffset.UTC))
-					.orElse(null);
 		}
 	}
 }
