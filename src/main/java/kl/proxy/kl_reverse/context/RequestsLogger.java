@@ -6,6 +6,7 @@ import java.util.AbstractQueue;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.PriorityBlockingQueue;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import io.vertx.core.Handler;
@@ -30,9 +31,16 @@ public class RequestsLogger {
 	public static JsonArray get(LocalDateTime from, LocalDateTime to) {
 		AbstractQueue<String> queue = putRequestLoggerQueue(q -> {});
 
-		List<Object> jsonObjects = queue.stream()
+		Predicate<JsonObject> predicate = json -> timeRangeMatcher(json.getLong("start"), from, to);
+		
+		return get(queue, predicate);
+	}
+
+	private static JsonArray get(AbstractQueue<String> queue, Predicate<JsonObject> predicate) {
+		List<JsonObject> jsonObjects = queue.stream()
 				.map(string -> new JsonObject(string))
-				.filter(json -> timeRangeMatcher(json.getLong("start"), from, to))
+				.filter(predicate)
+				.sorted((o1, o2) -> o1.getLong("start").compareTo(o2.getLong("start")))
 				.collect(Collectors.toUnmodifiableList());
 		return new JsonArray(jsonObjects);
 	}
