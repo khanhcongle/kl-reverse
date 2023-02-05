@@ -31,6 +31,9 @@ pm.getData((error, dataHolder) => {
 
 	// THE CHART
 	Highcharts.ganttChart('container', {
+        time: {
+            useUTC: false
+        },
 		title: {
 			text: undefined,
 			align: 'left'
