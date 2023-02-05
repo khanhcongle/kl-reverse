@@ -24,7 +24,7 @@ public class RequestsLogger {
 		PriorityBlockingQueue<String> queue = putRequestLoggerQueue(handler);
 		
 		System.out.println("queue.size() = " + queue.size());
-		if (queue.size() > 10) {
+		if (queue.size() > 100) {
 			queue.remove();
 		}
 	}

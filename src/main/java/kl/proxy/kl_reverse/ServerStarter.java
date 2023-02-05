@@ -10,9 +10,9 @@ import io.vertx.core.http.HttpServer;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
 import io.vertx.httpproxy.HttpProxy;
+import io.vertx.httpproxy.cache.CacheOptions;
 import kl.proxy.kl_reverse.context.ContextAccessable;
-import kl.proxy.kl_reverse.proxy.CachedRequestProxyInterceptor;
-import kl.proxy.kl_reverse.proxy.RequestLoggerProxyInterceptor;
+import kl.proxy.kl_reverse.proxy.CachingFilter;
 import kl.proxy.kl_reverse.requestlogger.RequestLoggerHandler;
 
 public abstract class ServerStarter {
@@ -74,8 +74,7 @@ public abstract class ServerStarter {
 		private void startProxyServer(Integer proxyPort, Integer originPort) {
 			HttpProxy httpProxyClient = HttpProxy.reverseProxy(vertx.createHttpClient())
 					.origin(originPort, getHostDomain())
-					.addInterceptor(new RequestLoggerProxyInterceptor())
-					.addInterceptor(new CachedRequestProxyInterceptor())
+					.addInterceptor(new CachingFilter(new CacheOptions().newCache()))
 					;
 
 			HttpServer httpServer = vertx.createHttpServer();
