@@ -22,9 +22,10 @@ import kl.proxy.kl_reverse.Constants;
 import kl.proxy.kl_reverse.context.DataSharable;
 
 public class SamplerService {
+	private static final Handler<PriorityBlockingQueue<String>> DO_NOTHING = q -> {};
+	
 	public static Optional<JsonObject> getFirstMatch(Predicate<JsonObject> predicate) {
-		AbstractQueue<String> queue = putRequestLoggerQueue(q -> {
-		});
+		AbstractQueue<String> queue = putRequestLoggerQueue(DO_NOTHING);
 
 		return get(queue, predicate).stream().findFirst();
 	}
@@ -42,11 +43,8 @@ public class SamplerService {
 		return queue;
 	}
 
-	public static String get(String fromTime, String toTime) {
-		LocalDateTime from = paramToLocalDateTime(fromTime);
-		LocalDateTime to = paramToLocalDateTime(toTime);
-		AbstractQueue<String> queue = putRequestLoggerQueue(q -> {
-		});
+	public static String get(LocalDateTime from, LocalDateTime to) {
+		AbstractQueue<String> queue = putRequestLoggerQueue(q -> {});
 
 		Predicate<JsonObject> predicate = json -> timeRangeMatcher(json.getLong("start"), from, to);
 
@@ -58,11 +56,6 @@ public class SamplerService {
 				.sorted((o1, o2) -> o1.getLong("start").compareTo(o2.getLong("start")))
 				.collect(Collectors.toUnmodifiableList());
 		return jsonObjects;
-	}
-
-	static private LocalDateTime paramToLocalDateTime(String fromParam) {
-		return Optional.ofNullable(fromParam).map(string -> new Date(Long.valueOf(string))).map(Date::toInstant)
-				.map(instant -> LocalDateTime.ofInstant(instant, ZoneOffset.UTC)).orElse(null);
 	}
 
 	public static void logRequest(ProxyRequest request, ProxyResponse response) {

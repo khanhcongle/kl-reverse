@@ -1,5 +1,10 @@
 package kl.proxy.kl_reverse.sampler;
 
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.util.Date;
+import java.util.Optional;
+
 import io.netty.handler.codec.http.HttpHeaderValues;
 import io.vertx.core.Promise;
 import io.vertx.core.http.HttpHeaders;
@@ -28,7 +33,10 @@ public class SamplerServerStarter extends ServerStarter {
 		router.route().method(HttpMethod.GET).handler(ctx -> {
 			HttpServerRequest request = ctx.request();
 
-			String payload = SamplerService.get(request.getParam("from"), request.getParam("to"));
+			LocalDateTime from = paramToLocalDateTime(request.getParam("from"));
+			LocalDateTime to = paramToLocalDateTime(request.getParam("to"));
+			
+			String payload = SamplerService.get(from, to);
 
 			HttpServerResponse response = ctx.response();
 			// enable chunked responses because we will be adding data as
@@ -46,5 +54,9 @@ public class SamplerServerStarter extends ServerStarter {
 		httpServer.requestHandler(router).listen(RESOURCE_PORT,
 				asyncResult -> this.serverStartListener("Resources", RESOURCE_PORT, asyncResult, startPromise));
 
+	}
+	static private LocalDateTime paramToLocalDateTime(String fromParam) {
+		return Optional.ofNullable(fromParam).map(string -> new Date(Long.valueOf(string))).map(Date::toInstant)
+				.map(instant -> LocalDateTime.ofInstant(instant, ZoneOffset.UTC)).orElse(null);
 	}
 }

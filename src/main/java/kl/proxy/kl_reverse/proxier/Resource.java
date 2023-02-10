@@ -1,4 +1,4 @@
-package kl.proxy.kl_reverse.proxy;
+package kl.proxy.kl_reverse.proxier;
 
 import java.util.Date;
 

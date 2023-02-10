@@ -1,4 +1,4 @@
-package kl.proxy.kl_reverse.proxy;
+package kl.proxy.kl_reverse.proxier;
 
 import io.vertx.core.Handler;
 import io.vertx.core.buffer.Buffer;

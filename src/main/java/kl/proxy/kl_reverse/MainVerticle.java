@@ -7,7 +7,7 @@ import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.json.JsonObject;
-import kl.proxy.kl_reverse.proxy.ProxyServerStarter;
+import kl.proxy.kl_reverse.proxier.ProxyServerStarter;
 import kl.proxy.kl_reverse.sampler.SamplerServerStarter;
 
 public class MainVerticle extends AbstractVerticle {
