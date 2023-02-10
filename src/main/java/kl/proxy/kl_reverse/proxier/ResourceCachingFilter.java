@@ -15,12 +15,12 @@ import io.vertx.httpproxy.ProxyResponse;
 import io.vertx.httpproxy.impl.CacheControl;
 import io.vertx.httpproxy.impl.ParseUtils;
 import io.vertx.httpproxy.spi.cache.Cache;
+import kl.proxy.kl_reverse.context.StopWatch;
 import kl.proxy.kl_reverse.sampler.SamplerService;
-import kl.proxy.kl_reverse.sampler.StopWatch;
 
-public class ResourceCachingFilter implements ProxyInterceptor {
+class ResourceCachingFilter implements ProxyInterceptor {
 
-	private static final long MAX_AGE = 5000L;
+	private static final long MAX_AGE = 5000L; // milliseconds
 
 	private static final String CACHED_RESOURCE = "cached_resource";
 
@@ -48,7 +48,8 @@ public class ResourceCachingFilter implements ProxyInterceptor {
 
 	@Override
 	public Future<ProxyResponse> handleProxyRequest(ProxyContext context) {
-		StopWatch.putStartTime(context.request().hashCode());
+		int requestHashCode = context.request().hashCode();
+		StopWatch.putStartTime(requestHashCode);
 		Future<ProxyResponse> future = tryHandleProxyRequestFromCache(context);
 		if (future != null) {
 			return future;
