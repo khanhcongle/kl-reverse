@@ -57,6 +57,7 @@ pm.getData((error, dataHolder) => {
 			pointFormat: \`<span>{point.label}</span>
                             <br><span>S: {point.start:%Y-%m-%dT%H:%M:%S.%LZ}</span>
                             <br/><span>E: {point.end:%Y-%m-%dT%H:%M:%S.%LZ}</span>
+                            <br/><p>{point.payload}</p>
                         \`,
 			outside: true
 		},
@@ -75,7 +76,8 @@ pm.visualizer.set(template, {
             name: each.path,
             label: `${each.time} ms`,
             start: each.start,
-            end: each.start + each.time
+            end: each.start + each.time,
+            payload: each.payload
         }
     })
 });

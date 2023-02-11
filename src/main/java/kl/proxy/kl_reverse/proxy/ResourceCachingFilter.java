@@ -27,15 +27,9 @@ class ResourceCachingFilter implements ProxyInterceptor {
 
 	@Override
 	public Future<ProxyResponse> handleProxyRequest(ProxyContext context) {
-		StopWatch.putRequest(context.request().hashCode());
-		Future<ProxyResponse> future = requestHandler.tryHandleProxyRequestFromCache(context);
+		recordStart(context);
 		
-		Resource res = new Resource();
-
-		Body requestBody = context.request().getBody();
-		if(requestBody != null) {
-			context.request().setBody(Body.body(new BufferingReadStream(requestBody.stream(), res.getRequestPayload()), requestBody.length()));
-		}
+		Future<ProxyResponse> future = requestHandler.tryHandleProxyRequestFromCache(context);
 		
 		if (future != null) {
 			return future;
@@ -45,10 +39,21 @@ class ResourceCachingFilter implements ProxyInterceptor {
 		});
 	}
 
+	private void recordStart(ProxyContext context) {
+		Resource res = new Resource();
+		Body requestBody = context.request().getBody();
+		if(requestBody != null) {
+			context.request().setBody(Body.body(new BufferingReadStream(requestBody.stream(), res.getRequestPayload()), requestBody.length()));
+		}
+		StopWatch.putRequest(context.request().hashCode(), res);
+	}
+
 	@Override
 	public Future<Void> handleProxyResponse(ProxyContext context) {
-		SamplerService.logRequest(context.request(), context.response());
-		return responseHandler.sendAndTryToCacheProxyResponse(context);
+		return responseHandler.sendAndTryToCacheProxyResponse(context)
+				.onSuccess(event -> {
+					SamplerService.logRequest(context.request(), context.response());			
+				});
 	}
 
 }

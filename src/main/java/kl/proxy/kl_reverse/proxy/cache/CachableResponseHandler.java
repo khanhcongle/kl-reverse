@@ -15,9 +15,7 @@ public class CachableResponseHandler extends Cachable {
 	
 	boolean isAlwaysCache = false;
 	
-	public CachableResponseHandler() {
-		// TODO Auto-generated constructor stub
-	}
+	private CachableResponseHandler() {}
 
 	public static CachableResponseHandlerBuilder builder() {
 		return new CachableResponseHandlerBuilder();

@@ -21,6 +21,7 @@ import io.vertx.httpproxy.ProxyResponse;
 import kl.proxy.kl_reverse.Constants;
 import kl.proxy.kl_reverse.context.DataSharable;
 import kl.proxy.kl_reverse.context.StopWatch;
+import kl.proxy.kl_reverse.proxy.cache.ResourceRecord;
 
 public class SamplerService {
 	private static final Handler<PriorityBlockingQueue<String>> DO_NOTHING = q -> {};
@@ -63,17 +64,18 @@ public class SamplerService {
 		String requestUri = String.join(" ", request.getMethod().toString(), request.getURI());
 
 		long currentTimeMillis = System.currentTimeMillis();
-		long start = StopWatch.removeRequest(request.hashCode());
-		long responseTimeMilis = currentTimeMillis - start;
+		ResourceRecord resourceRecord = StopWatch.removeRequest(request.hashCode());
+		long responseTimeMilis = currentTimeMillis - resourceRecord.getTime();
 
 		JsonObject record;
 		try {
 			record = JsonObject.of(
 						"request", requestUri,
 						"status", response.getStatusCode(),
-						"start", start,
+						"start", resourceRecord.getTime(),
 						"time", responseTimeMilis,
-						"path", new URL(request.absoluteURI()).getPath()
+						"path", new URL(request.absoluteURI()).getPath(),
+						"payload", resourceRecord.getResource().getRequestPayload().toString()
 						);
 			String prettJson = record.encodePrettily();
 			System.out.println(prettJson);
