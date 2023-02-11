@@ -5,15 +5,15 @@ import kl.proxy.kl_reverse.Constants;
 
 public class StopWatch {
 
-	public static void putStartTime(int hashCode) {
-		getStartTimeMap().put(hashCode, System.currentTimeMillis());
-	}
-
-	public static LocalMap<Integer, Long> getStartTimeMap() {
-		return DataSharable.getSharedData().getLocalMap(Constants.SharedData.REQUEST_START_TIME_MAP);
+	public static void putRequest(int hashCode) {
+		getResourceMap().put(hashCode, System.currentTimeMillis());
 	}
 	
-	public static long removeStartTime(int hashCode) {
-		return getStartTimeMap().remove(hashCode);
+	public static long removeRequest(int hashCode) {
+		return getResourceMap().remove(hashCode);
+	}
+
+	private static LocalMap<Integer, Long> getResourceMap() {
+		return DataSharable.getSharedData().getLocalMap(Constants.SharedData.REQUEST_START_TIME_MAP);
 	}
 }

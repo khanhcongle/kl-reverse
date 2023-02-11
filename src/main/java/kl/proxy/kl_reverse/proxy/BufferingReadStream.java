@@ -1,10 +1,10 @@
-package kl.proxy.kl_reverse.proxier;
+package kl.proxy.kl_reverse.proxy;
 
 import io.vertx.core.Handler;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.streams.ReadStream;
 
-class BufferingReadStream implements ReadStream<Buffer> {
+public class BufferingReadStream implements ReadStream<Buffer> {
 
 	private final ReadStream<Buffer> stream;
 	private final Buffer content;

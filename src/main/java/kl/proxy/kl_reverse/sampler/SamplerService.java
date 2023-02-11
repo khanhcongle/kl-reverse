@@ -63,13 +63,18 @@ public class SamplerService {
 		String requestUri = String.join(" ", request.getMethod().toString(), request.getURI());
 
 		long currentTimeMillis = System.currentTimeMillis();
-		long start = StopWatch.removeStartTime(request.hashCode());
+		long start = StopWatch.removeRequest(request.hashCode());
 		long responseTimeMilis = currentTimeMillis - start;
 
 		JsonObject record;
 		try {
-			record = JsonObject.of("request", requestUri, "status", response.getStatusCode(), "start", start, "time",
-					responseTimeMilis, "path", new URL(request.absoluteURI()).getPath());
+			record = JsonObject.of(
+						"request", requestUri,
+						"status", response.getStatusCode(),
+						"start", start,
+						"time", responseTimeMilis,
+						"path", new URL(request.absoluteURI()).getPath()
+						);
 			String prettJson = record.encodePrettily();
 			System.out.println(prettJson);
 			add(prettJson);
