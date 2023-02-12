@@ -26,6 +26,8 @@ To package your application:
 mvn clean package
 ```
 
+### run as maven project
+
 To run your application:
 
 ```shell
@@ -36,4 +38,10 @@ To custom ports:
 
 ```shell
 mvn clean compile exec:java -Dmaven.test.skip -Dbind=8080:8082,8089:8080
+```
+
+### Run as a standalone application
+
+```shell
+java -jar ./kl-reverse-1.0.0-SNAPSHOT-fat.jar -Dbind=8080:8082,8089:8080
 ```
