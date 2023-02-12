@@ -1,7 +1,5 @@
 # Kl-reverse
 
-Please use this tool instead: https://www.npmjs.com/package/json-caching-proxy
-
 ## Run / debug configuration on Eclipse
 
 Java Application:
@@ -43,5 +41,5 @@ mvn clean compile exec:java -Dmaven.test.skip -Dbind=8080:8082,8089:8080
 ### Run as a standalone application
 
 ```shell
-java -jar ./kl-reverse-0.0.1-fat.jar -Dbind=8080:8082,8089:8080
+java -jar ./kl-reverse-0.1.0-SNAPSHOT-fat.jar -Dbind=8080:8082,8089:8080
 ```
