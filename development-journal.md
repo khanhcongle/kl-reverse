@@ -2,6 +2,7 @@
 
 ## Wish list
 
+- Beautify request payload if Content-Type is application/x-www-form-urlencoded, or Json
 - Unit test and Integration Test (ref: https://vertx.io/blog/unit-and-integration-tests/)
 - cacheable exclude mode
 - delay caching

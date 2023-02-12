@@ -24,6 +24,8 @@ import kl.proxy.kl_reverse.context.StopWatch;
 import kl.proxy.kl_reverse.proxy.cache.ResourceRecord;
 
 public class SamplerService {
+	private static final int MAX_RECORD = 100;
+	
 	private static final Handler<PriorityBlockingQueue<String>> DO_NOTHING = q -> {};
 	
 	public static Optional<JsonObject> getFirstMatch(Predicate<JsonObject> predicate) {
@@ -93,7 +95,7 @@ public class SamplerService {
 		PriorityBlockingQueue<String> queue = putRequestLoggerQueue(handler);
 
 		System.out.println("queue.size() = " + queue.size());
-		if (queue.size() > 100) {
+		if (queue.size() > MAX_RECORD) {
 			queue.remove();
 		}
 	}
