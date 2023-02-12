@@ -43,5 +43,5 @@ mvn clean compile exec:java -Dmaven.test.skip -Dbind=8080:8082,8089:8080
 ### Run as a standalone application
 
 ```shell
-java -jar ./kl-reverse-1.0.0-SNAPSHOT-fat.jar -Dbind=8080:8082,8089:8080
+java -jar ./kl-reverse-0.0.1-fat.jar -Dbind=8080:8082,8089:8080
 ```
