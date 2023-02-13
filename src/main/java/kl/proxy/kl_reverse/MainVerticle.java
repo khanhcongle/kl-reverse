@@ -7,8 +7,8 @@ import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.json.JsonObject;
+import kl.proxy.kl_reverse.history.HistoryServerStarter;
 import kl.proxy.kl_reverse.proxy.ProxyServerStarter;
-import kl.proxy.kl_reverse.sampler.SamplerServerStarter;
 
 public class MainVerticle extends AbstractVerticle {
 	
@@ -19,7 +19,7 @@ public class MainVerticle extends AbstractVerticle {
 		this.startPromise = startPromise;
 		
 		getConfig().onSuccess(jsonConfig -> {
-			new SamplerServerStarter(startPromise).start(jsonConfig);
+			new HistoryServerStarter(startPromise).start(jsonConfig);
 			new ProxyServerStarter(startPromise).start(jsonConfig);
 			
 			this.startPromise.complete();

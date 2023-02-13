@@ -5,19 +5,24 @@ import io.vertx.httpproxy.Body;
 import io.vertx.httpproxy.ProxyContext;
 import io.vertx.httpproxy.ProxyInterceptor;
 import io.vertx.httpproxy.ProxyResponse;
+import io.vertx.httpproxy.cache.CacheOptions;
 import io.vertx.httpproxy.spi.cache.Cache;
 import kl.proxy.kl_reverse.context.StopWatch;
+import kl.proxy.kl_reverse.history.HistoryService;
 import kl.proxy.kl_reverse.proxy.cache.CachableRequestHandler;
 import kl.proxy.kl_reverse.proxy.cache.CachableResponseHandler;
 import kl.proxy.kl_reverse.proxy.cache.Resource;
-import kl.proxy.kl_reverse.sampler.SamplerService;
 
 class ResourceCachingFilter implements ProxyInterceptor {
 
 	CachableRequestHandler requestHandler;
 	CachableResponseHandler responseHandler;
+	int maxHistory;
 	
-	public ResourceCachingFilter(Cache<String, Resource> cache) {
+	public ResourceCachingFilter(CacheOptions cacheOption) {
+		maxHistory = cacheOption.getMaxSize();
+		
+		Cache<String, Resource> cache = cacheOption.newCache();
 		requestHandler = new CachableRequestHandler(cache);
 		responseHandler = CachableResponseHandler.builder()
 				.cache(cache)
@@ -52,7 +57,7 @@ class ResourceCachingFilter implements ProxyInterceptor {
 	public Future<Void> handleProxyResponse(ProxyContext context) {
 		return responseHandler.sendAndTryToCacheProxyResponse(context)
 				.onSuccess(event -> {
-					SamplerService.logRequest(context.request(), context.response());			
+					HistoryService.logRequest(context.request(), context.response(), maxHistory);			
 				});
 	}
 

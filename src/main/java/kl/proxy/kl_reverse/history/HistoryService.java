@@ -1,4 +1,4 @@
-package kl.proxy.kl_reverse.sampler;
+package kl.proxy.kl_reverse.history;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -23,8 +23,7 @@ import kl.proxy.kl_reverse.context.DataSharable;
 import kl.proxy.kl_reverse.context.StopWatch;
 import kl.proxy.kl_reverse.proxy.cache.ResourceRecord;
 
-public class SamplerService {
-	private static final int MAX_RECORD = 100;
+public class HistoryService {
 	
 	private static final Handler<PriorityBlockingQueue<String>> DO_NOTHING = q -> {};
 	
@@ -62,7 +61,7 @@ public class SamplerService {
 		return jsonObjects;
 	}
 
-	public static void logRequest(ProxyRequest request, ProxyResponse response) {
+	public static void logRequest(ProxyRequest request, ProxyResponse response, int maxRecord) {
 		String requestUri = String.join(" ", request.getMethod().toString(), request.getURI());
 
 		long currentTimeMillis = System.currentTimeMillis();
@@ -77,11 +76,12 @@ public class SamplerService {
 						"start", resourceRecord.getTime(),
 						"time", responseTimeMilis,
 						"path", new URL(request.absoluteURI()).getPath(),
+						"query", new URL(request.absoluteURI()).getQuery(),
 						"payload", resourceRecord.getResource().getRequestPayload().toString()
 						);
 			String prettJson = record.encodePrettily();
 			System.out.println(prettJson);
-			add(prettJson);
+			add(prettJson, maxRecord);
 
 		} catch (MalformedURLException e) {
 			// TODO Auto-generated catch block
@@ -89,13 +89,22 @@ public class SamplerService {
 		}
 	}
 
-	synchronized private static void add(String prettJson) {
+	synchronized private static void add(String prettJson, int maxRecord) {
 		Handler<PriorityBlockingQueue<String>> handler = queue1 -> queue1.add(prettJson);
 
 		PriorityBlockingQueue<String> queue = putRequestLoggerQueue(handler);
 
 		System.out.println("queue.size() = " + queue.size());
-		if (queue.size() > MAX_RECORD) {
+		if (queue.size() > maxRecord) {
+			queue.remove();
+		}
+	}
+	
+	public static void empty() {
+		PriorityBlockingQueue<String> queue = putRequestLoggerQueue(DO_NOTHING);
+
+		while (queue.size() > 0) {
+			System.out.println("queue.size() = " + queue.size());
 			queue.remove();
 		}
 	}

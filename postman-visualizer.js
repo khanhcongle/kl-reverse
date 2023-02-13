@@ -55,8 +55,10 @@ pm.getData((error, dataHolder) => {
 		},
 		tooltip: {
 			pointFormat: \`<span>{point.label}</span>
-                            <br><span>S: {point.start:%Y-%m-%dT%H:%M:%S.%LZ}</span>
-                            <br/><span>E: {point.end:%Y-%m-%dT%H:%M:%S.%LZ}</span>
+                            <br><span>path: {point.name}</span>
+                            <br><span>query: {point.query}</span>
+                            <br><span>start: {point.start:%Y-%m-%dT%H:%M:%S.%L}</span>
+                            <br/><p>time: {point.time} (ms)</p>
                             <br/><p>{point.payload}</p>
                         \`,
 			outside: true
@@ -77,6 +79,8 @@ pm.visualizer.set(template, {
             label: `${each.time} ms`,
             start: each.start,
             end: each.start + each.time,
+            time: each.time,
+            query: each.query,
             payload: each.payload
         }
     })

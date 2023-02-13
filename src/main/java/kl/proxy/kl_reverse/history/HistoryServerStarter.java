@@ -1,4 +1,4 @@
-package kl.proxy.kl_reverse.sampler;
+package kl.proxy.kl_reverse.history;
 
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -16,27 +16,28 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
 import kl.proxy.kl_reverse.ServerStarter;
 
-public class SamplerServerStarter extends ServerStarter {
+public class HistoryServerStarter extends ServerStarter {
 
 	private static final int RESOURCE_PORT = 8880;
 
-	public SamplerServerStarter(Promise<Void> startPromise) {
+	public HistoryServerStarter(Promise<Void> startPromise) {
 		super(startPromise);
 	}
 
+	@Override
 	public void start(JsonObject jsonConfig) {
 		/*
 		 * REF: https://vertx.io/docs/vertx-web/java/
 		 */
 		Router router = Router.router(vertx);
 
-		router.route().method(HttpMethod.GET).handler(ctx -> {
+		router.route("/histories").method(HttpMethod.GET).handler(ctx -> {
 			HttpServerRequest request = ctx.request();
 
 			LocalDateTime from = paramToLocalDateTime(request.getParam("from"));
 			LocalDateTime to = paramToLocalDateTime(request.getParam("to"));
 			
-			String payload = SamplerService.get(from, to);
+			String payload = HistoryService.get(from, to);
 
 			HttpServerResponse response = ctx.response();
 			// enable chunked responses because we will be adding data as
@@ -48,6 +49,11 @@ public class SamplerServerStarter extends ServerStarter {
 
 			// Now end the response
 			ctx.response().end();
+		});
+	
+		router.route("/histories").method(HttpMethod.DELETE).handler(ctx -> {
+			HistoryService.empty();
+			ctx.response().setStatusCode(200).end();
 		});
 
 		HttpServer httpServer = vertx.createHttpServer();

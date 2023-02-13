@@ -1,5 +1,7 @@
 package kl.proxy.kl_reverse.proxy;
 
+import java.util.Optional;
+
 import org.apache.commons.lang3.StringUtils;
 
 import io.vertx.core.Promise;
@@ -13,13 +15,19 @@ public class ProxyServerStarter extends ServerStarter {
 
 	private static final int PROXY_PORT = 8080;
 	private static final int ORIGIN_HOST_PORT = 8082;
+	private static final int MAX_HISTORY = 50;
+	
+	private Integer maxHistory;
 
 	public ProxyServerStarter(Promise<Void> startPromise) {
 		super(startPromise);
 	}
 
+	@Override
 	public void start(JsonObject jsonConfig) {
 		String[] bindings = StringUtils.split(jsonConfig.getString("bind"), ",");
+		this.maxHistory = Optional.ofNullable(jsonConfig.getInteger("maxHistory")).orElse(MAX_HISTORY);
+		
 		startMultipleProxyServers(bindings);
 	}
 
@@ -41,8 +49,11 @@ public class ProxyServerStarter extends ServerStarter {
 	}
 
 	private void startProxyServer(Integer proxyPort, Integer originPort) {
-		HttpProxy httpProxyClient = HttpProxy.reverseProxy(vertx.createHttpClient()).origin(originPort, getHostDomain())
-				.addInterceptor(new ResourceCachingFilter(new CacheOptions().newCache()));
+		CacheOptions cacheOption = new CacheOptions().setMaxSize(maxHistory);
+		
+		HttpProxy httpProxyClient = HttpProxy.reverseProxy(vertx.createHttpClient())
+				.origin(originPort, getHostDomain())
+				.addInterceptor(new ResourceCachingFilter(cacheOption));
 
 		HttpServer httpServer = vertx.createHttpServer();
 		httpServer.requestHandler(httpProxyClient).listen(proxyPort,
