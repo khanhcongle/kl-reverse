@@ -35,9 +35,9 @@ public class HistoryServerStarter extends ServerStarter {
 			HttpServerRequest request = ctx.request();
 
 			LocalDateTime from = paramToLocalDateTime(request.getParam("from"));
-			LocalDateTime to = paramToLocalDateTime(request.getParam("to"));
+			LocalDateTime to = paramToLocalDateTime(request.getParam("to"));			
 			
-			String payload = HistoryService.get(from, to);
+			String payload = HistoryService.get(from, to, request.getParam("exclude"));
 
 			HttpServerResponse response = ctx.response();
 			// enable chunked responses because we will be adding data as

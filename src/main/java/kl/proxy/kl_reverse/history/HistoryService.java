@@ -46,12 +46,19 @@ public class HistoryService {
 		return queue;
 	}
 
-	public static String get(LocalDateTime from, LocalDateTime to) {
+	public static String get(LocalDateTime from, LocalDateTime to, String exclude) {		
 		AbstractQueue<String> queue = putRequestLoggerQueue(q -> {});
+		
+		Predicate<JsonObject> predicate = json -> {
+				boolean isWithinTimeRange = timeRangeMatcher(json.getLong("start"), from, to);
+				boolean isNotExcluded = Optional.ofNullable(exclude)
+						.map( e -> !json.getString("path").contains(e)).orElse(true);
+				boolean isMatch = isWithinTimeRange && isNotExcluded;
+				return isMatch;
+			};
 
-		Predicate<JsonObject> predicate = json -> timeRangeMatcher(json.getLong("start"), from, to);
-
-		return new JsonArray(get(queue, predicate)).encodePrettily();
+		List<JsonObject> list = get(queue, predicate);
+		return new JsonArray(list).encodePrettily();
 	}
 
 	private static List<JsonObject> get(AbstractQueue<String> queue, Predicate<JsonObject> predicate) {
