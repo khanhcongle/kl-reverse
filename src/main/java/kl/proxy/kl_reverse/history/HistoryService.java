@@ -13,6 +13,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import io.vertx.core.Handler;
+import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.shareddata.LocalMap;
@@ -77,13 +78,15 @@ public class HistoryService {
 
 		JsonObject record;
 		try {
+			URL url = new URL(request.absoluteURI());
 			record = JsonObject.of(
 						"request", requestUri,
 						"status", response.getStatusCode(),
 						"start", resourceRecord.getTime(),
 						"time", responseTimeMilis,
-						"path", new URL(request.absoluteURI()).getPath(),
-						"query", new URL(request.absoluteURI()).getQuery(),
+						"path", url.getPath(),
+						"query", url.getQuery(),
+						"contentType", request.headers().get(HttpHeaders.CONTENT_TYPE),
 						"payload", resourceRecord.getResource().getRequestPayload().toString()
 						);
 			String prettJson = record.encodePrettily();

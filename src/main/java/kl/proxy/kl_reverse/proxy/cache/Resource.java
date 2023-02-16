@@ -55,13 +55,17 @@ public class Resource {
 		proxyResponse.headers().addAll(headers);
 		proxyResponse.setBody(Body.body(responsePayload));
 	}
+	
+	public Buffer getRequestPayload() {
+		return requestPayload;
+	}
+	
+	public Buffer getResponsePayload() {
+		return responsePayload;
+	}
 
 	@Override
 	public String toString() {
 		return "Resource [" + httpMethod + " " + absoluteUri + ", status=" + statusCode + "]";
-	}
-
-	public Buffer getRequestPayload() {
-		return requestPayload;
 	}
 }

@@ -59,7 +59,7 @@ pm.getData((error, dataHolder) => {
                             <br><span>query: {point.query}</span>
                             <br><span>start: {point.start:%Y-%m-%dT%H:%M:%S.%L}</span>
                             <br/><p>time: {point.time} (ms)</p>
-                            <br/><p>{point.payload}</p>
+                            <br/><p>payload: {point.payload}</p>
                         \`,
 			outside: true
 		},
@@ -69,6 +69,16 @@ pm.getData((error, dataHolder) => {
 </script>
 
 `;
+
+function formatPayload (contentType, payload) {
+    if(!contentType) {
+        return payload;
+    }
+    if(contentType.includes('application/x-www-form-urlencoded')) {
+        return decodeURIComponent(payload).split("&").join('<br/>');
+    }
+    return payload;
+}
 
 // Set visualizer
 pm.visualizer.set(template, {
@@ -81,7 +91,7 @@ pm.visualizer.set(template, {
             end: each.start + each.time,
             time: each.time,
             query: each.query,
-            payload: each.payload
+            payload: formatPayload(each.contentType, each.payload)
         }
     })
 });

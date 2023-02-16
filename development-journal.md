@@ -14,9 +14,11 @@
 
 ## Log
 
+2023-02-15
+- add ability to exclude
+
 2023-02-11
 - added request's payload into visualization chart
-
 
 2023-02-04
 - visualization resource could be queried by time (from, to) (e.g. GET localhost:8880?from=1675496922458)
